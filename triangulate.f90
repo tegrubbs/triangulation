@@ -93,7 +93,7 @@ contains
   
 
   subroutine basic_triangulate()
-    integer :: nodeid,elemid, tempedge(2,3)
+    integer :: nodeid,elemid, tempedge(2,3),i
 
     ! array that stores sorted indices must be 64bit integers.
     integer*8 :: sorted_nodes(num_nodes), tempElem(3)
@@ -112,6 +112,8 @@ contains
 
 
     do nodeid=1,num_nodes
+
+      !print *, nodeid
        
       ! calculates the distance between this node and all the others, and sorts it to find the nearest nodes.
       displacement(1,:) = node(1,nodeid)
@@ -120,53 +122,60 @@ contains
       distance = norm2(displacement, 1)
       call sort_index(distance, sorted_nodes)
 
-      tempElem = sorted_nodes(1:3)
-      orientation = orient( node(:,tempElem(1)), node(:,tempElem(2)), node(:,tempElem(3)))
+      
+      tempElem(1) = sorted_nodes(1)
 
-      if (orientation .eq. 0.) cycle ! points are collinear and should not be made into an element.
+      do i=1,3
+        tempElem(2:3) = sorted_nodes(i+1:i+2)
+      
+        orientation = orient( node(:,tempElem(1)), node(:,tempElem(2)), node(:,tempElem(3)))
 
-      ! if orientation is negative, points are in wrong order, flipping one pair corrects the order.
-      if (orientation .lt. 0.) then
-         element(1, elemid) = tempElem(2)
-         element(2, elemid) = tempElem(1)
-         element(3, elemid) = tempElem(3)
-      else
-         element(:, elemid) = tempElem
-      end if
+        if (orientation .eq. 0.) cycle ! points are collinear and should not be made into an element.
 
-      tempedge(1, 1) = element(1, elemid)
-      tempedge(2, 1) = element(2, elemid)
-      tempedge(1, 2) = element(2, elemid)
-      tempedge(2, 2) = element(3, elemid)
-      tempedge(1, 3) = element(3, elemid)
-      tempedge(2, 3) = element(1, elemid)
+        ! if orientation is negative, points are in wrong order, flipping one pair corrects the order.
+        if (orientation .lt. 0.) then
+           element(1, elemid) = tempElem(2)
+           element(2, elemid) = tempElem(1)
+           element(3, elemid) = tempElem(3)
+        else
+           element(:, elemid) = tempElem
+        end if
 
-      ! check if edge intersect with previous edges.
-      ! if an edge intersects, this element needs to be canceled.
-      print *, nodeid, element(:, elemid)
-      
-      if (edgeCheck(tempedge(:,1))) then
-         !print *, "FAIL", tempedge(:,1)
-         cycle
-      end if
-      
-      if (edgeCheck(tempedge(:,2))) then
-         !print *, "FAIL", tempedge(:,2)
-         cycle
-      end if
-      
-      if (edgeCheck(tempedge(:,3))) then
-         !print *, "FAIL", tempedge(:,3)
-         cycle
-      end if
-      
-      
-      edge(:,edgeid) = tempedge(:,1)
-      edge(:,edgeid+1) = tempedge(:,2)
-      edge(:,edgeid+2) = tempedge(:,3)
-      
-      edgeid = edgeid + 3
-      elemid = elemid + 1
+        tempedge(1, 1) = element(1, elemid)
+        tempedge(2, 1) = element(2, elemid)
+        tempedge(1, 2) = element(2, elemid)
+        tempedge(2, 2) = element(3, elemid)
+        tempedge(1, 3) = element(3, elemid)
+        tempedge(2, 3) = element(1, elemid)
+
+        !print *, element(:,elemid)
+        ! check if edge intersect with previous edges.
+        ! if an edge intersects, this element needs to be canceled.
+        
+        if (edgeCheck(tempedge(:,1))) then
+           !print *, "FAIL", tempedge(:,1)
+           cycle
+        end if
+
+        if (edgeCheck(tempedge(:,2))) then
+           !print *, "FAIL", tempedge(:,2)
+           cycle
+        end if
+
+        if (edgeCheck(tempedge(:,3))) then
+           !print *, "FAIL", tempedge(:,3)
+           cycle
+        end if
+
+
+        edge(:,edgeid) = tempedge(:,1)
+        edge(:,edgeid+1) = tempedge(:,2)
+        edge(:,edgeid+2) = tempedge(:,3)
+
+        edgeid = edgeid + 3
+        elemid = elemid + 1
+     end do
+     
       
     end do
    
