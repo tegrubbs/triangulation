@@ -39,6 +39,7 @@ contains
        call newrgbcolor(win, 255, 255, 255)
        call drawstr(win, node(1,i), node(2,i), 14., nodeString, 0.0, 4)
        call fillcirc(win, node(1,i), node(2,i), RADIUS, RADIUS)
+       !call msleep(25)
     end do      
 
   end subroutine draw_nodes
@@ -52,7 +53,7 @@ contains
     integer :: element(:,:), num_elements    
        
     do i=1, num_elements
-      call draw_elem(node(:, element(:,i)), i)
+       call draw_elem(node(:, element(:,i)), i)       
     end do
 
   end subroutine draw_elements
@@ -64,16 +65,16 @@ contains
     character(8) :: idstring
        
     ! loop over vertices to create triangle.
-    do i=1,3
-       
+    do i=1,3       
        call newrgbcolor(win, 255, 0, 0)
        call drawline(win, elem(1,i), elem(2,i), elem(1, MOD(i,3)+1), elem(2, MOD(i,3)+1))
-       
-       write(idstring, '(i3)') elemID
-       call newrgbcolor(win, 0, 255, 0)
-       call drawstr(win, sum(elem(1,:))/3.-0.025, sum(elem(2,:))/3., 16., idstring, 0.0, 8)
-       
+       !call msleep(75) ! fun to see it drawn.                    
     end do
+    
+    write(idstring, '(i3)') elemID
+    call newrgbcolor(win, 0, 255, 0)
+    call drawstr(win, sum(elem(1,:))/3.-0.025, sum(elem(2,:))/3., 16., idstring, 0.0, 8)
+    
   end subroutine draw_elem
 
 end module draw
