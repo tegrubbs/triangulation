@@ -3,10 +3,11 @@ program genGrid
   integer :: sidelength = 10, numNodes
   real*8, allocatable :: node(:,:)
   integer :: element(3,200)
-  real :: dx, r
+  real :: dx, dy, r
   integer :: i, j, io,elemio, elemid
 
   dx = 1./sidelength
+  dy = dx
   
   numNodes = sidelength*sidelength
 
@@ -14,11 +15,12 @@ program genGrid
 
   ! Placing gridpoints
   do i=1,sidelength
+     !if (mod(i,2)==0) dx = dx*.9
      do j=1,sidelength
         call RANDOM_NUMBER(r)
-        node(1,(i-1)*sidelength+j) = dx*i + r*.03
+        node(1,(i-1)*sidelength+j) = dx*i + r*.05
         call RANDOM_NUMBER(r)
-        node(2,(i-1)*sidelength+j) = dx*j + r*.03
+        node(2,(i-1)*sidelength+j) = dy*j + r*.05
      end do
   end do
 
