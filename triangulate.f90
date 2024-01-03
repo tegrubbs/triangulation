@@ -1,3 +1,5 @@
+! check MAX_EDGE_LENGTH if things look strange.
+
 module triangulate
   use stdlib_sorting, only: sort_index
   implicit none
@@ -6,7 +8,7 @@ module triangulate
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 0.15, MIN_VALUE = 1E-4
+  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-4
 
 contains
 
@@ -122,19 +124,34 @@ contains
 
   ! checks if element already exists.
   function element_exists(temp) result(exists)
-    integer*8 :: temp(3)
+    integer :: temp(3)
     integer :: i
-    integer :: a(3),b(3),c(3)
+    integer :: a(3),b(3),c(3),d(3)
     logical :: exists
+    integer :: roll(3), roll2(3)
     exists = .false.
     
-    do i=1, elemid
+    do i=1, elemid-1
+
+       ! first 3 checks if this element already exists.
        a = (element(:,i) .eq. temp(1))
        b = (element(:,i) .eq. temp(2))
        c = (element(:,i) .eq. temp(3))
+
+       d = (element(:,i) .eq. temp)
+       roll = (cshift(temp, 1) .eq. element(:,i))
+       roll2 = (cshift(temp, 2) .eq. element(:,i))
+       
+      
+       
+       ! if all nodes are the same, this element already exists.
        if (sum(a)>0 .and. sum(b)>0 .and. sum(c)>0) then
           exists = .true.
           exit
+       ! if 2 nodes are the same and in the same order then they will either cause an overlap or enclose another element.
+       else if (sum(d) > 1 .or. sum(roll) > 1 .or. sum(roll2) > 1) then
+          exists = .true.     
+          exit          
        end if
     end do
     
@@ -151,8 +168,8 @@ contains
     real :: displacement(2,num_nodes), distance(num_nodes), orientation
     logical :: intersection
     
-    num_elements = 1000
-    num_edges = 1000
+    num_elements = 1000000
+    num_edges = 1000000
     
     allocate(element(3,num_elements))
     allocate(edge(2, num_edges))
@@ -167,7 +184,7 @@ contains
 
 
 
-      !print *, "NODE:", nodeid
+      !print *, "NODE: ", nodeid
        
       ! calculates the distance between this node and all the others, and sorts it to find the nearest nodes.
       displacement(1,:) = node(1,nodeid)
@@ -190,17 +207,20 @@ contains
 
           if (orientation .eq. 0.) cycle ! points are collinear and should not be made into an element.
 
-          ! checking if element already exists.
-          if(element_exists(tempElem)) cycle
+         
 
           ! if orientation is negative, points are in wrong order, flipping one pair corrects the order.
           if (orientation .lt. 0.) then
              element(1, elemid) = tempElem(2)
              element(2, elemid) = tempElem(1)
              element(3, elemid) = tempElem(3)
+             
           else
              element(:, elemid) = tempElem
           end if
+
+           ! checking if element already exists.
+          if(element_exists(element(:,elemid))) cycle
 
 
           ! now doing edge checks.
@@ -239,8 +259,11 @@ contains
           edge(:,edgeid+1) = tempedge(:,2)
           edge(:,edgeid+2) = tempedge(:,3)
 
+          print *, elemid, element(:,elemid)
+
           edgeid = edgeid + 3
           elemid = elemid + 1
+          
           
        end do
        

@@ -10,8 +10,8 @@ module draw
 !!$  private :: draw_tri
   
   real, parameter, private :: RADIUS = .005 ! radius of nodes.
-  integer, parameter, private :: WIN_WIDTH  = 800
-  integer, parameter, private :: WIN_HEIGHT = 800
+  integer, parameter, private :: WIN_WIDTH  = 900
+  integer, parameter, private :: WIN_HEIGHT = 900
   integer, private :: win = 0
   real, private :: xb, xt, yb, yt
 
@@ -68,12 +68,12 @@ contains
     do i=1,3       
        call newrgbcolor(win, 255, 0, 0)
        call drawline(win, elem(1,i), elem(2,i), elem(1, MOD(i,3)+1), elem(2, MOD(i,3)+1))
-       !call msleep(75) ! fun to see it drawn.                    
+       !call msleep(20) ! fun to see it drawn.                    
     end do
     
     write(idstring, '(i3)') elemID
     call newrgbcolor(win, 0, 255, 0)
-    call drawstr(win, sum(elem(1,:))/3.-0.025, sum(elem(2,:))/3., 16., idstring, 0.0, 8)
+    call drawstr(win, sum(elem(1,:))/3. -.01 , sum(elem(2,:))/3., 14., idstring, 0.0, 8)
     
   end subroutine draw_elem
 
