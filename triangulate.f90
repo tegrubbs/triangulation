@@ -8,7 +8,7 @@ module triangulate
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-4
+  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8
 
 contains
 
@@ -101,10 +101,10 @@ contains
       ! need to remove small values from orientation calculation.
       ! edges that are totally distance can be calculated as an intersection if they are collinear.
       ! These is becauase the orientation calculation returns a very small number on the order of 10^-9.
-      call small_number_check(oa)
-      call small_number_check(ob)
-      call small_number_check(oc)
-      call small_number_check(od)
+!!$      call small_number_check(oa)
+!!$      call small_number_check(ob)
+!!$      call small_number_check(oc)
+!!$      call small_number_check(od)
       
       
       intersects = ((oa > 0.) .neqv. (ob > 0.)) .and. ((oc > 0.) .neqv. (od > 0.))
@@ -115,7 +115,10 @@ contains
       if (intersects .and. .not. node1same .and. .not. node2same) then
 !!$         print *, edge(:,i)
 !!$         print *, orient(c,d,a), orient(c,d,b), orient(a,b,c), orient(a,b,d)
+!!$         print *, "Fails intersection"
          exit
+      else 
+         intersects = .false.
       end if
       
     end do
@@ -147,10 +150,14 @@ contains
        ! if all nodes are the same, this element already exists.
        if (sum(a)>0 .and. sum(b)>0 .and. sum(c)>0) then
           exists = .true.
+          !print *, "Fails existence check"
           exit
        ! if 2 nodes are the same and in the same order then they will either cause an overlap or enclose another element.
        else if (sum(d) > 1 .or. sum(roll) > 1 .or. sum(roll2) > 1) then
-          exists = .true.     
+          exists = .true.
+!!$          print *, temp
+!!$          print *, element(:,i)
+!!$          print *, "Fails enclosure check"
           exit          
        end if
     end do
@@ -199,9 +206,10 @@ contains
       ! explore all combinations of neighbors to try different elements.
       do i=2,10
          tempElem(2) = sorted_nodes(i)
-         do j=i+1,10
+         do j=2,10
           if (j .eq. i) cycle
           tempElem(3) = sorted_nodes(j)
+          !print * ,tempElem
                 
           orientation = orient( node(:,tempElem(1)), node(:,tempElem(2)), node(:,tempElem(3)))
 
@@ -259,7 +267,7 @@ contains
           edge(:,edgeid+1) = tempedge(:,2)
           edge(:,edgeid+2) = tempedge(:,3)
 
-          print *, elemid, element(:,elemid)
+          !print *, elemid, element(:,elemid)
 
           edgeid = edgeid + 3
           elemid = elemid + 1
