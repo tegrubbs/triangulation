@@ -8,7 +8,7 @@ module triangulate
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8,MIN_ANGLE=15.
+  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8, MIN_ANGLE=15.
 
 contains
 

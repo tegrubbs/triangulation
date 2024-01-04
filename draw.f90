@@ -63,17 +63,20 @@ contains
     real :: elem(2,3)    
     integer :: i, elemID
     character(8) :: idstring
-       
+    call newrgbcolor(win, 255, 0, 0)
+    call fillpoly(win, elem(1,:), elem(2,:), 3, 0)
     ! loop over vertices to create triangle.
     do i=1,3       
-       call newrgbcolor(win, 255, 0, 0)
+       call newrgbcolor(win, 0, 255, 0)
        call drawline(win, elem(1,i), elem(2,i), elem(1, MOD(i,3)+1), elem(2, MOD(i,3)+1))
+        
        !call msleep(20) ! fun to see it drawn.                    
     end do
     
+    
     write(idstring, '(i3)') elemID
     call newrgbcolor(win, 0, 255, 0)
-    call drawstr(win, sum(elem(1,:))/3. -.01 , sum(elem(2,:))/3., 14., idstring, 0.0, 8)
+   ! call drawstr(win, sum(elem(1,:))/3. -.01 , sum(elem(2,:))/3., 10., idstring, 0.0, 8)
     
   end subroutine draw_elem
 

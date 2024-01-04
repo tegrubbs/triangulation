@@ -7,7 +7,10 @@ make:
 	rm *.o
 
 genGrid:
-	gfortran -o genGrid genGrid.f90
+	gfortran  -o genGrid genGrid.f90	
+
+genCircle:
+	gfortran -o genCircle genGridCircle.f90
 
 clean:
 	rm genGrid main
