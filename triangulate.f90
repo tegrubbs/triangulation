@@ -3,12 +3,12 @@
 module triangulate
   use stdlib_sorting, only: sort_index
   implicit none
-  public :: read_nodes, read_elements, basic_triangulate, orient, edgeCheck, edge_length,element_exists,small_number_check
+  public :: read_nodes, read_elements, basic_triangulate, orient, edgeCheck, edge_length,element_exists,small_number_check,low_angle
   real, allocatable :: node(:,:)
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8
+  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8,MIN_ANGLE=15.
 
 contains
 
@@ -141,6 +141,7 @@ contains
        b = (element(:,i) .eq. temp(2))
        c = (element(:,i) .eq. temp(3))
 
+       ! this helps prevent one larger element from encompassing smaller ones.
        d = (element(:,i) .eq. temp)
        roll = (cshift(temp, 1) .eq. element(:,i))
        roll2 = (cshift(temp, 2) .eq. element(:,i))
@@ -164,6 +165,46 @@ contains
     
 
   end function element_exists
+
+  function low_angle(temp) result(small_angle)
+    integer*8 :: temp(3)
+    real :: pa(2),pb(2),pc(2), a,b,c, AA,BB,CC
+    logical :: small_angle
+    
+    small_angle = .false.
+    pa = node(:,temp(1))
+    pb = node(:,temp(2))
+    pc = node(:,temp(3))
+
+    a = norm2(pb-pa)
+    b = norm2(pc-pb)
+    c = norm2(pa-pc)
+
+    CC = acosd((a**2 + b**2 - c**2) / (2.*a*b))
+    BB = acosd((a**2 + c**2 - b**2) / (2.*a*c))
+    AA = 180. - BB - CC
+
+   
+
+    if (AA < MIN_ANGLE) then
+       small_angle = .true.
+       return
+    end if
+
+    if (BB < MIN_ANGLE) then
+       small_angle = .true.
+       return
+    end if
+
+    if (CC < MIN_ANGLE) then
+       small_angle = .true.
+       return
+    end if
+
+    
+    
+  end function low_angle
+  
   
   
 
@@ -210,6 +251,8 @@ contains
           if (j .eq. i) cycle
           tempElem(3) = sorted_nodes(j)
           !print * ,tempElem
+
+          if (low_angle(tempElem)) cycle
                 
           orientation = orient( node(:,tempElem(1)), node(:,tempElem(2)), node(:,tempElem(3)))
 
