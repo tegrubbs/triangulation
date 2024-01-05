@@ -1,3 +1,5 @@
 *.dat
+*.mod
+*.smod
 main
 genGrid

@@ -8,8 +8,8 @@ module triangulate
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 0.2, MIN_VALUE = 1E-8, MIN_ANGLE=15.
-
+  real, parameter :: MAX_EDGE_LENGTH = 2., MIN_VALUE = 1E-6, MIN_ANGLE=40.
+  
 contains
 
   subroutine read_nodes()
@@ -23,7 +23,7 @@ contains
     do i=1,num_nodes
        read(nodeio, *) node(:,i)
     end do           
-    close(nodeio)
+    close(nodeio)   
 
   end subroutine read_nodes
   
@@ -101,10 +101,10 @@ contains
       ! need to remove small values from orientation calculation.
       ! edges that are totally distance can be calculated as an intersection if they are collinear.
       ! These is becauase the orientation calculation returns a very small number on the order of 10^-9.
-!!$      call small_number_check(oa)
-!!$      call small_number_check(ob)
-!!$      call small_number_check(oc)
-!!$      call small_number_check(od)
+      call small_number_check(oa)
+      call small_number_check(ob)
+      call small_number_check(oc)
+      call small_number_check(od)
       
       
       intersects = ((oa > 0.) .neqv. (ob > 0.)) .and. ((oc > 0.) .neqv. (od > 0.))
@@ -185,7 +185,6 @@ contains
     AA = 180. - BB - CC
 
    
-
     if (AA < MIN_ANGLE) then
        small_angle = .true.
        return
@@ -222,11 +221,8 @@ contains
     allocate(element(3,num_elements))
     allocate(edge(2, num_edges))
 
-
-
     elemid = 1
     edgeid = 1
-
 
     do nodeid=1,num_nodes
 
@@ -245,9 +241,9 @@ contains
       tempElem(1) = sorted_nodes(1)
 
       ! explore all combinations of neighbors to try different elements.
-      do i=2,10
+      do i=2,5
          tempElem(2) = sorted_nodes(i)
-         do j=2,10
+         do j=2,5
           if (j .eq. i) cycle
           tempElem(3) = sorted_nodes(j)
           !print * ,tempElem
