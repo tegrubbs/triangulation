@@ -8,7 +8,7 @@ module triangulate
   real :: bounds(4)
   integer, allocatable :: element(:,:), edge(:,:)
   integer :: num_elements, num_nodes, num_edges, edgeid, elemid ! -1 to account for header line.
-  real, parameter :: MAX_EDGE_LENGTH = 2., MIN_VALUE = 1E-6, MIN_ANGLE=40.
+  real, parameter :: MAX_EDGE_LENGTH = 2., MIN_VALUE = 1E-6, MIN_ANGLE=15.
   
 contains
 
@@ -99,7 +99,7 @@ contains
       od = orient(a,b,d)
 
       ! need to remove small values from orientation calculation.
-      ! edges that are totally distance can be calculated as an intersection if they are collinear.
+      ! edges that are totally distant can be calculated as an intersection if they are collinear.
       ! These is becauase the orientation calculation returns a very small number on the order of 10^-9.
       call small_number_check(oa)
       call small_number_check(ob)
@@ -166,6 +166,7 @@ contains
 
   end function element_exists
 
+  ! Checks if minimum angle of element is smaller than MIN_ANGLE.
   function low_angle(temp) result(small_angle)
     integer*8 :: temp(3)
     real :: pa(2),pb(2),pc(2), a,b,c, AA,BB,CC
@@ -248,20 +249,19 @@ contains
           tempElem(3) = sorted_nodes(j)
           !print * ,tempElem
 
+          ! Check if minimum angle is too small.
           if (low_angle(tempElem)) cycle
                 
           orientation = orient( node(:,tempElem(1)), node(:,tempElem(2)), node(:,tempElem(3)))
 
-          if (orientation .eq. 0.) cycle ! points are collinear and should not be made into an element.
-
-         
+          ! points are collinear and should not be made into an element.        
+          if (orientation .eq. 0.) cycle
 
           ! if orientation is negative, points are in wrong order, flipping one pair corrects the order.
           if (orientation .lt. 0.) then
              element(1, elemid) = tempElem(2)
              element(2, elemid) = tempElem(1)
-             element(3, elemid) = tempElem(3)
-             
+             element(3, elemid) = tempElem(3)             
           else
              element(:, elemid) = tempElem
           end if
@@ -271,7 +271,6 @@ contains
 
 
           ! now doing edge checks.
-
           tempedge(:,1) = element(1:2, elemid)
           tempedge(:,2) = element(2:3, elemid)
           tempedge(1,3) = element(3, elemid)
@@ -302,12 +301,15 @@ contains
           end if
 
 
+          ! Add edge to list of edges.
           edge(:,edgeid) = tempedge(:,1)
           edge(:,edgeid+1) = tempedge(:,2)
           edge(:,edgeid+2) = tempedge(:,3)
 
           !print *, elemid, element(:,elemid)
 
+          ! If passed all checks, increment element and edge ids.
+          ! If a test was failed, next element will overwrite this one.
           edgeid = edgeid + 3
           elemid = elemid + 1
           

@@ -18,9 +18,9 @@ program genGrid
      !if (mod(i,2)==0) dx = dx*.9
      do j=1,sidelength
         call RANDOM_NUMBER(r)
-        node(1,(i-1)*sidelength+j) = dx*i + r*.05
+        node(1,(i-1)*sidelength+j) = dx*i + r*.025
         call RANDOM_NUMBER(r)
-        node(2,(i-1)*sidelength+j) = dy*j + r*.05
+        node(2,(i-1)*sidelength+j) = dy*j + r*.025
      end do
   end do
 
